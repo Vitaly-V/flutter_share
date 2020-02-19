@@ -2,6 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'activity_feed.dart';
+import 'profile.dart';
+import 'search.dart';
+import 'timeline.dart';
+import 'upload.dart';
+
 final GoogleSignIn googleSignIn = GoogleSignIn();
 
 class Home extends StatefulWidget {
@@ -11,10 +17,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isAuth = false;
+  PageController pageController;
+  int pageIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    pageController = PageController();
     // Detects when user signed in
     googleSignIn.onCurrentUserChanged.listen(
         (GoogleSignInAccount account) => handleSignId(account),
@@ -47,11 +56,51 @@ class _HomeState extends State<Home> {
     googleSignIn.signOut();
   }
 
+  void onPageChanged(int pageIndex) {
+    setState(() {
+      this.pageIndex = pageIndex;
+    });
+  }
+
   Widget buildAuthScreen() {
-    return RaisedButton(
-      child: const Text('Logout'),
-      onPressed: logout,
+    return Scaffold(
+      body: PageView(
+        children: <Widget>[
+          Timeline(),
+          ActivityFeed(),
+          Upload(),
+          Search(),
+          Profile(),
+          /* RaisedButton(
+          child: const Text('Logout'),
+          onPressed: logout,
+        ),*/
+        ],
+        controller: pageController,
+        onPageChanged: onPageChanged,
+        physics: const NeverScrollableScrollPhysics(),
+      ),
+      bottomNavigationBar: CupertinoTabBar(
+        currentIndex: pageIndex,
+        onTap: onTap,
+        activeColor: Theme.of(context).primaryColor,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.whatshot)),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
+          BottomNavigationBarItem(
+              icon: Icon(
+            Icons.photo_camera,
+            size: 35,
+          )),
+          BottomNavigationBarItem(icon: Icon(Icons.search)),
+          BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
+        ],
+      ),
     );
+  }
+
+  void onTap(int pageIndex) {
+    pageController.jumpToPage(pageIndex);
   }
 
   Widget buildUnAuthScreen() {
@@ -101,5 +150,11 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return isAuth ? buildAuthScreen() : buildUnAuthScreen();
+  }
+
+  @override
+  void dispose() {
+    pageController.dispose();
+    super.dispose();
   }
 }
