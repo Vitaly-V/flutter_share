@@ -43,8 +43,15 @@ class _HomeState extends State<Home> {
     googleSignIn.signIn();
   }
 
+  void logout() {
+    googleSignIn.signOut();
+  }
+
   Widget buildAuthScreen() {
-    return const Text('Authenticate');
+    return RaisedButton(
+      child: const Text('Logout'),
+      onPressed: logout,
+    );
   }
 
   Widget buildUnAuthScreen() {
