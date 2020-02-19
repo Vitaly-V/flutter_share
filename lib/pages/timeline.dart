@@ -9,9 +9,9 @@ class Timeline extends StatefulWidget {
 
 class _TimelineState extends State<Timeline> {
   @override
-  Widget build(context) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: header(context),
+      appBar: header(context, isAppTitle: true),
       body: const Text('Timeline'),
     );
   }
