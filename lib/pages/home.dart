@@ -100,7 +100,11 @@ class _HomeState extends State<Home> {
   }
 
   void onTap(int pageIndex) {
-    pageController.jumpToPage(pageIndex);
+    pageController.animateToPage(
+      pageIndex,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+    );
   }
 
   Widget buildUnAuthScreen() {
