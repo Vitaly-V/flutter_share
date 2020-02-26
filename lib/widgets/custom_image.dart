@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
 
-cachedNetworkImage(mediaUrl) {
-  return Text('cached network image');
+Widget cachedNetworkImage(String mediaUrl) {
+  return const Text('cached network image');
 }
