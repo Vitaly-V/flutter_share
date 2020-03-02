@@ -12,7 +12,38 @@ class Timeline extends StatefulWidget {
 }
 
 class _TimelineState extends State<Timeline> {
-  void getUserById() {}
+  initState() {
+    super.initState();
+    //createUser();
+    //updateUser();
+    //deleteUser();
+  }
+
+  Future<void> createUser() {
+    userRer.document('fsasfafa').setData(<String, dynamic>{
+      'username': 'Vetal',
+      'postsCount': 0,
+      'isAdmin': false
+    });
+  }
+
+  Future<void> updateUser() async {
+    final DocumentSnapshot doc = await userRer.document('fsasfafa').get();
+    if (doc.exists) {
+      doc.reference.updateData(<String, dynamic>{
+        'username': 'Vetal2',
+        'postsCount': 0,
+        'isAdmin': false
+      });
+    }
+  }
+
+  Future<void> deleteUser() async {
+    final DocumentSnapshot doc = await userRer.document('fsasfafa').get();
+    if (doc.exists) {
+      doc.reference.delete();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
