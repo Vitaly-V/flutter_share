@@ -35,6 +35,7 @@ class _CreateAccountState extends State<CreateAccount> {
       appBar: header(
         context,
         titleText: 'Set up your profile',
+        removeBackButton: true,
       ),
       body: ListView(
         children: <Widget>[

@@ -4,8 +4,10 @@ AppBar header(
   BuildContext context, {
   bool isAppTitle = false,
   String titleText,
+  bool removeBackButton = false,
 }) {
   return AppBar(
+    automaticallyImplyLeading: removeBackButton,
     title: Text(
       isAppTitle ? 'FlutterShare' : titleText,
       style: TextStyle(
