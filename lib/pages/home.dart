@@ -11,7 +11,7 @@ import 'search.dart';
 import 'upload.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
-final CollectionReference userRer = Firestore.instance.collection('users');
+final CollectionReference userRef = Firestore.instance.collection('users');
 User currentUser;
 
 class Home extends StatefulWidget {
@@ -56,7 +56,7 @@ class _HomeState extends State<Home> {
 
   Future<void> createUserInFirestore() async {
     final GoogleSignInAccount user = googleSignIn.currentUser;
-    DocumentSnapshot doc = await userRer.document(user.id).get();
+    DocumentSnapshot doc = await userRef.document(user.id).get();
     if (!doc.exists) {
       final dynamic username = await Navigator.push<dynamic>(
         context,
@@ -64,7 +64,7 @@ class _HomeState extends State<Home> {
           builder: (BuildContext context) => CreateAccount(),
         ),
       );
-      userRer.document(user.id).setData(<String, dynamic>{
+      userRef.document(user.id).setData(<String, dynamic>{
         'id': user.id,
         'username': username,
         'photoUrl': user.photoUrl,
@@ -73,7 +73,7 @@ class _HomeState extends State<Home> {
         'bio': '',
         'timestamp': timestamp,
       });
-      doc = await userRer.document(user.id).get();
+      doc = await userRef.document(user.id).get();
     }
 
     currentUser = User.fromDocument(doc);
