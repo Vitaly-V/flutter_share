@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttershare/pages/home.dart';
 import 'package:fluttershare/widgets/progress.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -259,7 +260,7 @@ class _UploadState extends State<Upload> {
             height: 100,
             alignment: Alignment.center,
             child: RaisedButton.icon(
-              onPressed: () => print('get user location'),
+              onPressed: getUserLocation,
               icon: Icon(
                 Icons.my_location,
                 color: Colors.white,
@@ -277,6 +278,17 @@ class _UploadState extends State<Upload> {
         ],
       ),
     );
+  }
+
+  Future<void> getUserLocation() async {
+    final Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    final List<Placemark> placemarks = await Geolocator()
+        .placemarkFromCoordinates(position.latitude, position.longitude);
+    final Placemark placemark = placemarks[0];
+    final String formattedAddress =
+        '${placemark.locality}, ${placemark.country}';
+    locationController.text = formattedAddress;
   }
 
   @override
