@@ -2,11 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../models/post.dart' as post_model;
 import '../models/user.dart';
 import '../widgets/header.dart';
 import '../widgets/progress.dart';
 import 'edit_profile.dart';
 import 'home.dart';
+import 'post.dart';
 
 class Profile extends StatefulWidget {
   final String profileId;
@@ -19,6 +21,33 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final String currentUserId = currentUser?.id;
+  bool isLoading = false;
+  int postCount = 0;
+  List<Post> posts;
+
+  @override
+  void initState() {
+    super.initState();
+    getProfilePosts();
+  }
+
+  Future<void> getProfilePosts() async {
+    setState(() {
+      isLoading = true;
+    });
+    final QuerySnapshot snapshot = await postRef
+        .document(widget.profileId)
+        .collection('userPosts')
+        //.orderBy('timestamp', descending: true)
+        .getDocuments();
+    setState(() {
+      isLoading = false;
+      postCount = snapshot.documents.length;
+      posts = snapshot.documents
+          .map((doc) => Post(post_model.Post.fromDocument(doc)))
+          .toList();
+    });
+  }
 
   Widget buildCountColumn(String label, int count) {
     return Column(
@@ -87,6 +116,15 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  Widget buildProfilePost() {
+    if (isLoading) {
+      return circularProgress();
+    }
+    return Column(
+      children: posts,
+    );
+  }
+
   Widget buildProfileHeader() {
     return FutureBuilder<dynamic>(
       future: userRef.document(widget.profileId).get(),
@@ -116,7 +154,7 @@ class _ProfileState extends State<Profile> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            buildCountColumn('posts', 0),
+                            buildCountColumn('posts', postCount),
                             buildCountColumn('followers', 0),
                             buildCountColumn('following', 0),
                           ],
@@ -179,6 +217,10 @@ class _ProfileState extends State<Profile> {
       body: ListView(
         children: <Widget>[
           buildProfileHeader(),
+          const Divider(
+            height: 0,
+          ),
+          buildProfilePost(),
         ],
       ),
     );
