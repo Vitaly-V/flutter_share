@@ -1,18 +1,186 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../models/user.dart';
 import '../widgets/header.dart';
+import '../widgets/progress.dart';
+import 'edit_profile.dart';
+import 'home.dart';
 
 class Profile extends StatefulWidget {
+  final String profileId;
+
+  const Profile({this.profileId});
+
   @override
   _ProfileState createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
+  final String currentUserId = currentUser?.id;
+
+  Widget buildCountColumn(String label, int count) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          count.toString(),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 4),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  void editProfile() {
+    Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute<dynamic>(
+        builder: (BuildContext context) =>
+            EditProfile(currentUserId: currentUserId),
+      ),
+    );
+  }
+
+  Widget buildButton({String text, Function function}) {
+    return Container(
+      padding: const EdgeInsets.only(top: 2),
+      child: FlatButton(
+        onPressed: () => function(),
+        child: Container(
+          width: 250,
+          height: 27,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            border: Border.all(color: Colors.blue),
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildProfileButton() {
+    final bool isProfileOwner = currentUserId == widget.profileId;
+    if (isProfileOwner) {
+      return buildButton(text: 'Edit Profile', function: editProfile);
+    }
+  }
+
+  Widget buildProfileHeader() {
+    return FutureBuilder<dynamic>(
+      future: userRef.document(widget.profileId).get(),
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (!snapshot.hasData) {
+          return circularProgress();
+        }
+        final User user = User.fromDocument(snapshot.data as DocumentSnapshot);
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.grey,
+                    backgroundImage: CachedNetworkImageProvider(
+                      user.photoUrl,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            buildCountColumn('posts', 0),
+                            buildCountColumn('followers', 0),
+                            buildCountColumn('following', 0),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            buildProfileButton(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(
+                  top: 12,
+                ),
+                child: Text(
+                  user.username,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  user.displayName,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  user.bio,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: header(context, titleText: 'Profile'),
-      body: const Text('Profile'),
+      body: ListView(
+        children: <Widget>[
+          buildProfileHeader(),
+        ],
+      ),
     );
   }
 }
