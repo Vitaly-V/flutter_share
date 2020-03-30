@@ -16,10 +16,14 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController displayNameController = TextEditingController();
   TextEditingController bioController = TextEditingController();
   bool isLoading = false;
   User user;
+  bool _displayNameValid = true;
+  bool _bioValid = true;
+
   @override
   void initState() {
     super.initState();
@@ -55,7 +59,9 @@ class _EditProfileState extends State<EditProfile> {
         ),
         TextField(
           controller: displayNameController,
-          decoration: const InputDecoration(hintText: 'Update Display Name'),
+          decoration: InputDecoration(
+              hintText: 'Update Display Name',
+              errorText: _displayNameValid ? null : 'Display Name too short'),
         )
       ],
     );
@@ -76,15 +82,42 @@ class _EditProfileState extends State<EditProfile> {
         ),
         TextField(
           controller: bioController,
-          decoration: const InputDecoration(hintText: 'Update Bio'),
+          decoration: InputDecoration(
+              hintText: 'Update Bio',
+              errorText: _bioValid ? null : 'Bio too long'),
         )
       ],
     );
   }
 
+  void updateProfileData() {
+    setState(() {
+      _displayNameValid = displayNameController.text.trim().length > 3;
+      _bioValid = bioController.text.trim().length < 100;
+    });
+
+    if (_bioValid && _displayNameValid) {
+      userRef.document(widget.currentUserId).updateData(<String, String>{
+        'displayName': displayNameController.text,
+        'bio': bioController.text
+      });
+      SnackBar snackBar = const SnackBar(
+        content: Text('Profile updated!'),
+      );
+      _scaffoldKey.currentState.showSnackBar(snackBar);
+    }
+  }
+
+  void logout() async {
+    await googleSignIn.signOut();
+    Navigator.push<dynamic>(context,
+        MaterialPageRoute<dynamic>(builder: (BuildContext context) => Home()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
@@ -128,7 +161,7 @@ class _EditProfileState extends State<EditProfile> {
                         ),
                       ),
                       RaisedButton(
-                        onPressed: () => print('Update profile'),
+                        onPressed: updateProfileData,
                         child: Text(
                           'Update Profile',
                           style: TextStyle(
@@ -141,7 +174,7 @@ class _EditProfileState extends State<EditProfile> {
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: FlatButton.icon(
-                          onPressed: () => print('logout'),
+                          onPressed: logout,
                           icon: Icon(
                             Icons.cancel,
                             color: Colors.red,
