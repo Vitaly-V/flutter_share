@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/post.dart' as post_model;
 import '../models/user.dart';
 import '../widgets/header.dart';
+import '../widgets/post_tile.dart';
 import '../widgets/progress.dart';
 import 'edit_profile.dart';
 import 'home.dart';
@@ -21,9 +22,10 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final String currentUserId = currentUser?.id;
+  bool isGridOrientation = true;
   bool isLoading = false;
   int postCount = 0;
-  List<Post> posts;
+  List<post_model.Post> posts;
 
   @override
   void initState() {
@@ -44,7 +46,7 @@ class _ProfileState extends State<Profile> {
       isLoading = false;
       postCount = snapshot.documents.length;
       posts = snapshot.documents
-          .map((doc) => Post(post_model.Post.fromDocument(doc)))
+          .map((doc) => post_model.Post.fromDocument(doc))
           .toList();
     });
   }
@@ -120,9 +122,25 @@ class _ProfileState extends State<Profile> {
     if (isLoading) {
       return circularProgress();
     }
-    return Column(
-      children: posts,
-    );
+    if (isGridOrientation) {
+      final List<GridTile> gridTiles = [];
+      posts.forEach((post_model.Post post) {
+        gridTiles.add(GridTile(child: PostTile(post)));
+      });
+      return GridView.count(
+        crossAxisCount: 3,
+        childAspectRatio: 1,
+        mainAxisSpacing: 1.5,
+        crossAxisSpacing: 1.5,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: gridTiles,
+      );
+    } else {
+      return Column(
+        children: posts.map((post_model.Post post) => Post(post)).toList(),
+      );
+    }
   }
 
   Widget buildProfileHeader() {
@@ -210,6 +228,38 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  void togglePostOrientation() {
+    setState(() {
+      isGridOrientation = !isGridOrientation;
+    });
+  }
+
+  Widget buildTogglePostOrientation() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        IconButton(
+          icon: Icon(
+            Icons.grid_on,
+            color: isGridOrientation
+                ? Theme.of(context).primaryColor
+                : Colors.grey,
+          ),
+          onPressed: togglePostOrientation,
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.list,
+            color: isGridOrientation
+                ? Colors.grey
+                : Theme.of(context).primaryColor,
+          ),
+          onPressed: togglePostOrientation,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,6 +267,8 @@ class _ProfileState extends State<Profile> {
       body: ListView(
         children: <Widget>[
           buildProfileHeader(),
+          const Divider(),
+          buildTogglePostOrientation(),
           const Divider(
             height: 0,
           ),

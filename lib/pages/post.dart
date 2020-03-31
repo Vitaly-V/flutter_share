@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttershare/widgets/custom_image.dart';
 
 import '../models/post.dart' as post_model;
 import '../models/user.dart';
@@ -59,7 +60,7 @@ class Post extends StatelessWidget {
       onDoubleTap: () => print('liking post'),
       child: Stack(
         alignment: Alignment.center,
-        children: <Widget>[Image.network(post.mediaUrl)],
+        children: <Widget>[cachedNetworkImage(post.mediaUrl)],
       ),
     );
   }
