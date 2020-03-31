@@ -8,10 +8,27 @@ import '../models/user.dart';
 import '../widgets/progress.dart';
 import 'home.dart';
 
-class Post extends StatelessWidget {
+class Post extends StatefulWidget {
   final post_model.Post post;
 
   const Post(this.post);
+
+  @override
+  _PostState createState() => _PostState();
+}
+
+class _PostState extends State<Post> {
+  post_model.Post post;
+  int likesCount;
+  bool isLiked;
+
+  @override
+  void initState() {
+    super.initState();
+    post = widget.post;
+    isLiked = widget.post.likes[currentUser?.id];
+    likesCount = getLikeCount(post);
+  }
 
   int getLikeCount(post_model.Post post) {
     if (post.likes == null) {
@@ -55,9 +72,26 @@ class Post extends StatelessWidget {
     );
   }
 
+  void handleLikePost() {
+    setState(() {
+      if (isLiked != true) {
+        isLiked = true;
+        likesCount++;
+      } else {
+        isLiked = false;
+        likesCount--;
+      }
+      postRef
+          .document(post.ownerId)
+          .collection('userPosts')
+          .document(post.postId)
+          .updateData(<String, bool>{'likes.${currentUser?.id}': isLiked});
+    });
+  }
+
   Widget buildPostImage() {
     return GestureDetector(
-      onDoubleTap: () => print('liking post'),
+      onDoubleTap: handleLikePost,
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[cachedNetworkImage(post.mediaUrl)],
@@ -75,9 +109,9 @@ class Post extends StatelessWidget {
               padding: EdgeInsets.only(top: 40, left: 20),
             ),
             GestureDetector(
-              onTap: () => print('liking post'),
+              onTap: handleLikePost,
               child: Icon(
-                Icons.favorite_border,
+                isLiked ? Icons.favorite : Icons.favorite_border,
                 size: 28,
                 color: Colors.pink,
               ),
@@ -100,7 +134,7 @@ class Post extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(left: 20),
               child: Text(
-                getLikeCount(post).toString() + ' likes',
+                '$likesCount likes',
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
