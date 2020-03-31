@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../models/post.dart' as post_model;
 import '../models/user.dart';
@@ -121,6 +122,33 @@ class _ProfileState extends State<Profile> {
   Widget buildProfilePost() {
     if (isLoading) {
       return circularProgress();
+    }
+    if (posts.isEmpty) {
+      return Container(
+        color: Theme.of(context).accentColor.withOpacity(0.6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SvgPicture.asset(
+              'assets/images/no_content.svg',
+              height: 260,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 20,
+              ),
+              child: Text(
+                'No Posts',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 40,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
     if (isGridOrientation) {
       final List<GridTile> gridTiles = [];
