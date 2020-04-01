@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttershare/pages/home.dart';
-import 'package:fluttershare/widgets/header.dart';
-import 'package:fluttershare/widgets/progress.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+import '../widgets/header.dart';
+import '../widgets/progress.dart';
+import 'home.dart';
 
 class Comments extends StatefulWidget {
   final String postId;
@@ -56,6 +57,21 @@ class CommentsState extends State<Comments> {
       'avatarUrl': currentUser.photoUrl,
       'userId': currentUser.id
     });
+    if (widget.postOwnerId != currentUser.id) {
+      activityFeedRef
+          .document(widget.postOwnerId)
+          .collection('feedItems')
+          .add(<String, dynamic>{
+        'type': 'comment',
+        'commentData': commentsController.text,
+        'username': currentUser.username,
+        'userId': currentUser.id,
+        'userProfileImg': currentUser.photoUrl,
+        'postId': widget.postId,
+        'mediaUrl': widget.postMediaUrl,
+        'timestamp': timestamp,
+      });
+    }
     commentsController.clear();
   }
 
