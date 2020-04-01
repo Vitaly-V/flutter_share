@@ -35,7 +35,7 @@ class CommentsState extends State<Comments> {
           if (!snapshot.hasData) {
             return circularProgress();
           }
-          final List<Comment> comments = [];
+          final List<Comment> comments = <Comment>[];
           snapshot.data.documents.forEach((DocumentSnapshot doc) {
             comments.add(Comment.fromDocument(doc));
           });
@@ -62,7 +62,11 @@ class CommentsState extends State<Comments> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: header(context, titleText: 'Comments'),
+      appBar: header(
+        context,
+        titleText: 'Comments',
+        removeBackButton: true,
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -123,7 +127,7 @@ class Comment extends StatelessWidget {
           ),
           subtitle: Text(timeago.format(timestamp.toDate())),
         ),
-        Divider(),
+        const Divider(),
       ],
     );
   }
