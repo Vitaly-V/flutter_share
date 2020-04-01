@@ -2,12 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttershare/pages/post_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../widgets/header.dart';
 import '../widgets/progress.dart';
 import 'home.dart';
+import 'post_screen.dart';
+import 'profile.dart';
 
 class ActivityFeed extends StatefulWidget {
   @override
@@ -145,7 +146,7 @@ class ActivityFeedItem extends StatelessWidget {
         color: Colors.white54,
         child: ListTile(
           title: GestureDetector(
-            onTap: () => print('show profile'),
+            onTap: () => showProfile(context, profileId: userId),
             child: RichText(
               overflow: TextOverflow.ellipsis,
               text: TextSpan(
@@ -179,4 +180,13 @@ class ActivityFeedItem extends StatelessWidget {
       ),
     );
   }
+}
+
+void showProfile(BuildContext context, {String profileId}) {
+  Navigator.push<void>(
+    context,
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) => Profile(profileId: profileId),
+    ),
+  );
 }

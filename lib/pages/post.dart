@@ -9,6 +9,7 @@ import '../models/post.dart' as post_model;
 import '../models/user.dart';
 import '../widgets/custom_image.dart';
 import '../widgets/progress.dart';
+import 'activity_feed.dart';
 import 'comments.dart';
 import 'home.dart';
 
@@ -63,7 +64,7 @@ class _PostState extends State<Post> {
             backgroundImage: CachedNetworkImageProvider(user.photoUrl),
           ),
           title: GestureDetector(
-            onTap: () => print('showing profile'),
+            onTap: () => showProfile(context, profileId: user.id),
             child: Text(
               user.username,
               style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
