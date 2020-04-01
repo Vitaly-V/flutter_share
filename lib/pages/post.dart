@@ -9,6 +9,7 @@ import 'package:fluttershare/widgets/custom_image.dart';
 import '../models/post.dart' as post_model;
 import '../models/user.dart';
 import '../widgets/progress.dart';
+import 'comments.dart';
 import 'home.dart';
 
 class Post extends StatefulWidget {
@@ -23,14 +24,16 @@ class Post extends StatefulWidget {
 class _PostState extends State<Post> {
   post_model.Post post;
   int likesCount;
-  bool isLiked;
+  bool isLiked = false;
   bool showHeart = false;
 
   @override
   void initState() {
     super.initState();
     post = widget.post;
-    isLiked = widget.post.likes[currentUser?.id];
+    isLiked = widget.post.likes[currentUser?.id] == null
+        ? false
+        : widget.post.likes[currentUser?.id];
     likesCount = getLikeCount(post);
   }
 
@@ -107,7 +110,7 @@ class _PostState extends State<Post> {
         children: <Widget>[
           cachedNetworkImage(post.mediaUrl),
           if (showHeart)
-            Animator(
+            Animator<dynamic>(
               duration: const Duration(milliseconds: 300),
               tween: Tween<dynamic>(begin: 0.8, end: 1.5),
               curve: Curves.elasticOut,
@@ -123,6 +126,19 @@ class _PostState extends State<Post> {
             )
         ],
       ),
+    );
+  }
+
+  void showComments() {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<dynamic>(builder: (BuildContext context) {
+        return Comments(
+          postId: post.postId,
+          postOwnerId: post.ownerId,
+          postMediaUrl: post.mediaUrl,
+        );
+      }),
     );
   }
 
@@ -147,7 +163,7 @@ class _PostState extends State<Post> {
               padding: EdgeInsets.only(top: 40, right: 20),
             ),
             GestureDetector(
-              onTap: () => print('show comments'),
+              onTap: showComments,
               child: Icon(
                 Icons.chat,
                 size: 28,
