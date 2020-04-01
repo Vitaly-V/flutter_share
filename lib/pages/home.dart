@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttershare/models/user.dart';
-import 'package:fluttershare/pages/create_account.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../models/user.dart';
 import 'activity_feed.dart';
+import 'create_account.dart';
 import 'profile.dart';
 import 'search.dart';
 import 'upload.dart';
@@ -17,6 +17,8 @@ final CollectionReference userRef = Firestore.instance.collection('users');
 final CollectionReference postRef = Firestore.instance.collection('posts');
 final CollectionReference commentsRef =
     Firestore.instance.collection('comments');
+final CollectionReference activityFeedRef =
+    Firestore.instance.collection('feed');
 final DateTime timestamp = DateTime.now();
 
 User currentUser;

@@ -4,10 +4,10 @@ import 'package:animator/animator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttershare/widgets/custom_image.dart';
 
 import '../models/post.dart' as post_model;
 import '../models/user.dart';
+import '../widgets/custom_image.dart';
 import '../widgets/progress.dart';
 import 'comments.dart';
 import 'home.dart';
@@ -79,15 +79,50 @@ class _PostState extends State<Post> {
     );
   }
 
+  void addLikeToActivityFeed() {
+    if (post.ownerId != currentUser.id) {
+      activityFeedRef
+          .document(post.ownerId)
+          .collection('feedItems')
+          .document(post.postId)
+          .setData(<String, dynamic>{
+        'type': 'like',
+        'username': currentUser.username,
+        'userId': currentUser.id,
+        'userProfileImg': currentUser.photoUrl,
+        'postId': post.postId,
+        'mediaUrl': post.mediaUrl,
+        'timestamp': timestamp,
+      });
+    }
+  }
+
+  void removeLikeFromActivityFeed() {
+    if (post.ownerId != currentUser.id) {
+      activityFeedRef
+          .document(post.ownerId)
+          .collection('feedItems')
+          .document(post.postId)
+          .get()
+          .then((DocumentSnapshot doc) {
+        if (doc.exists) {
+          doc.reference.delete();
+        }
+      });
+    }
+  }
+
   void handleLikePost() {
     setState(() {
       if (isLiked != true) {
         isLiked = true;
         likesCount++;
         showHeart = true;
+        addLikeToActivityFeed();
       } else {
         isLiked = false;
         likesCount--;
+        removeLikeFromActivityFeed();
       }
       postRef
           .document(post.ownerId)
