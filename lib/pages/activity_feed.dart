@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttershare/pages/post_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../widgets/header.dart';
@@ -89,10 +90,22 @@ class ActivityFeedItem extends StatelessWidget {
     );
   }
 
-  void configureMediaPreview() {
+  void showPost(BuildContext context) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => PostScreen(
+          postId: postId,
+          userId: userId,
+        ),
+      ),
+    );
+  }
+
+  void configureMediaPreview(BuildContext context) {
     if (type == 'like' || type == 'comment') {
       mediaPreview = GestureDetector(
-        onTap: () => print('showing post'),
+        onTap: () => showPost(context),
         child: Container(
           height: 50,
           width: 50,
@@ -125,7 +138,7 @@ class ActivityFeedItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    configureMediaPreview();
+    configureMediaPreview(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: Container(

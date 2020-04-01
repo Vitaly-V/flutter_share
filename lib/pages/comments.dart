@@ -81,7 +81,7 @@ class CommentsState extends State<Comments> {
       appBar: header(
         context,
         titleText: 'Comments',
-        removeBackButton: true,
+        showBackButton: true,
       ),
       body: Column(
         children: <Widget>[
