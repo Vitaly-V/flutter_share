@@ -2,11 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttershare/models/user.dart';
-import 'package:fluttershare/pages/home.dart';
-import 'package:fluttershare/widgets/progress.dart';
 
+import '../models/user.dart';
+import '../widgets/progress.dart';
 import 'activity_feed.dart';
+import 'home.dart';
 
 class Search extends StatefulWidget {
   @override
