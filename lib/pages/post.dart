@@ -140,7 +140,7 @@ class _PostState extends State<Post> {
                   onPressed: () => handleDeletePost(context),
                   icon: Icon(Icons.more_vert),
                 )
-              : Container(),
+              : Text(''),
         );
       },
     );
