@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/user.dart';
+import '../widgets/progress.dart';
 import 'activity_feed.dart';
 import 'create_account.dart';
 import 'profile.dart';
 import 'search.dart';
+import 'timeline.dart';
 import 'upload.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -23,6 +25,8 @@ final CollectionReference followersRef =
     Firestore.instance.collection('followers');
 final CollectionReference followingRef =
     Firestore.instance.collection('following');
+final CollectionReference timelineRef =
+    Firestore.instance.collection('timeline');
 final DateTime timestamp = DateTime.now();
 
 User currentUser;
@@ -56,7 +60,6 @@ class _HomeState extends State<Home> {
   void handleSignId(GoogleSignInAccount account) {
     if (account != null) {
       createUserInFirestore();
-      print(account);
       setState(() {
         isAuth = true;
       });
@@ -88,10 +91,9 @@ class _HomeState extends State<Home> {
       });
       doc = await userRef.document(user.id).get();
     }
-
-    currentUser = User.fromDocument(doc);
-    print(currentUser);
-    print(currentUser.username);
+    setState(() {
+      currentUser = User.fromDocument(doc);
+    });
   }
 
   void login() {
@@ -109,14 +111,13 @@ class _HomeState extends State<Home> {
   }
 
   Widget buildAuthScreen() {
+    if (currentUser == null) {
+      return circularProgress();
+    }
     return Scaffold(
       body: PageView(
         children: <Widget>[
-          //Timeline(),
-          RaisedButton(
-            child: const Text('Logout'),
-            onPressed: logout,
-          ),
+          Timeline(currentUser: currentUser),
           ActivityFeed(),
           Upload(currentUser: currentUser),
           Search(),
