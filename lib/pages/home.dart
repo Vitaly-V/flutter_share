@@ -57,9 +57,9 @@ class _HomeState extends State<Home> {
         .catchError((Object err) => print('Error signing in: $err'));
   }
 
-  void handleSignId(GoogleSignInAccount account) {
+  Future<void> handleSignId(GoogleSignInAccount account) async {
     if (account != null) {
-      createUserInFirestore();
+      await createUserInFirestore();
       setState(() {
         isAuth = true;
       });
@@ -89,7 +89,13 @@ class _HomeState extends State<Home> {
         'bio': '',
         'timestamp': timestamp,
       });
+
       doc = await userRef.document(user.id).get();
+      await followersRef
+          .document(user.id)
+          .collection('userFollowers')
+          .document(user.id)
+          .setData(<String, String>{});
     }
     setState(() {
       currentUser = User.fromDocument(doc);
