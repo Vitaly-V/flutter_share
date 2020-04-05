@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +40,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool isAuth = false;
   PageController pageController;
   int pageIndex = 0;
@@ -48,26 +53,64 @@ class _HomeState extends State<Home> {
     pageController = PageController();
     // Detects when user signed in
     googleSignIn.onCurrentUserChanged.listen(
-        (GoogleSignInAccount account) => handleSignId(account),
+        (GoogleSignInAccount account) => handleSignIn(account),
         onError: (Object err) => print('Error signing in: $err'));
     // Reauthenticate user when app is opened
     googleSignIn
         .signInSilently(suppressErrors: false)
-        .then((GoogleSignInAccount account) => handleSignId(account))
+        .then((GoogleSignInAccount account) => handleSignIn(account))
         .catchError((Object err) => print('Error signing in: $err'));
   }
 
-  Future<void> handleSignId(GoogleSignInAccount account) async {
+  Future<void> handleSignIn(GoogleSignInAccount account) async {
     if (account != null) {
       await createUserInFirestore();
       setState(() {
         isAuth = true;
       });
+      configurePushNotifications();
     } else {
       setState(() {
         isAuth = false;
       });
     }
+  }
+
+  Future<void> configurePushNotifications() {
+    final GoogleSignInAccount user = googleSignIn.currentUser;
+    if (Platform.isIOS) {
+      getIOSPermission();
+    }
+    _firebaseMessaging.getToken().then((String token) {
+      userRef
+          .document(user.id)
+          .updateData(<String, String>{'androidNotificationToken': token});
+    });
+
+    _firebaseMessaging.configure(
+      // onLaunch: (Map<String, dynamic> message) async {},
+      // onResume: (Map<String, dynamic> message) async {},
+      onMessage: (Map<String, dynamic> message) async {
+        final String recipientId = message['data']['recipient'] as String;
+        final String body = message['notification']['body'] as String;
+        if (recipientId == user.id) {
+          final SnackBar snackBar = SnackBar(
+            content: Text(
+              body,
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+          _scaffoldKey.currentState.showSnackBar(snackBar);
+        }
+      },
+    );
+  }
+
+  void getIOSPermission() {
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(alert: true, badge: true, sound: true));
+    _firebaseMessaging.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings) {});
   }
 
   Future<void> createUserInFirestore() async {
@@ -121,6 +164,7 @@ class _HomeState extends State<Home> {
       return circularProgress();
     }
     return Scaffold(
+      key: _scaffoldKey,
       body: PageView(
         children: <Widget>[
           Timeline(currentUser: currentUser),

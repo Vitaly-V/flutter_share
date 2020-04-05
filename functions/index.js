@@ -6,7 +6,6 @@ exports.onCreateFollower = functions.firestore
   .document('/followers/{userId}/userFollowers/{followerId}')
   .onCreate(async (snapshot, context) => {
     const userId = context.params.userId;
-    const followerId = context.params.followerId;
     const followedUserRef = admin
       .firestore()
       .collection('posts')
@@ -33,7 +32,6 @@ exports.onDeleteFollower = functions.firestore
   .document('/followers/{userId}/userFollowers/{followerId}')
   .onDelete(async (snapshot, context) => {
     const userId = context.params.userId;
-    const followerId = context.params.followerId;
 
     const timelinePostRef = admin
       .firestore()
@@ -139,4 +137,46 @@ exports.onDeletePost = functions.firestore
         });
       }
     });
+  });
+
+exports.onCreateActivityFeedItem = functions.firestore
+  .document('/feed/{userId}/feedItems/{activityFeedItems}')
+  .onCreate(async (snapshot, context) => {
+    const userId = context.params.userId;
+    const userRef = admin.firestore().doc(`users/${userId}`);
+    const doc = await userRef.get();
+    const androidNotificationToken  = doc.data().androidNotificationToken;
+    if(androidNotificationToken) {
+      sendNotification(androidNotificationToken, snapshot.data());
+    } else {
+      console.log('No token for user');
+    }
+
+    function sendNotification(androidNotificationToken, activityFeedItem) {
+      let body;
+      switch (activityFeedItem.type) {
+        case 'comment':
+          body = `${activityFeedItem.username} replied: ${activityFeedItem.commentData}`;
+          break;
+        case 'like':
+          body = `${activityFeedItem.username} liked: your post`;
+          break;
+        case 'follow':
+          body = `${activityFeedItem.username} started following you`;
+          break;
+        default:
+          break;
+      }
+
+      const message = {
+        notification: { body },
+        token:  androidNotificationToken,
+        data: {recipient: userId},
+      };
+      admin.messaging().send(message).then(response => {
+        console.log('Successfully sent message', response);
+      }).catch(error => {
+        console.log('Error sending message', error);
+      });
+    }
   });
